@@ -8,7 +8,10 @@ options(tidyverse.quiet = TRUE)
 
 library(tidyverse)
 library(haven) # Read .dta
-library(countrycode)
+library(readxl) # Read .xls(x)
+                                        # library(countrycode)
+library(lubridate) # handling dates
+library(ggthemes) # to get the Stata theme
 
 list(
   ## Read World Bank country meta-data
@@ -23,21 +26,49 @@ list(
     read_csv(wb_country_meta_file)
   ),
 
-  ## Read + clean commodity prices
+
+  ## Read + clean UNCTAD commodity prices
   tar_target(
-    commodity_prices_file,
+    unctad_commodity_prices_file,
     "./data/us_commodityprice_m_02372543400211.csv",
     format = "file"
   ),
 
   tar_target(
-    commodity_prices_raw,
-    read_csv(commodity_prices_file, skip = 2)
+    unctad_commodity_prices_raw,
+    read_csv(unctad_commodity_prices_file, skip = 2)
   ),
 
   tar_target(
-    commidity_prices_tbl,
-    clean_commidity_prices(commodity_prices_raw)
+    unctad_commodity_prices_tbl,
+    clean_unctad_commidity_prices(unctad_commodity_prices_raw)
+  ),
+  ## Read + clean WB commodity prices
+  tar_target(
+    wb_commodity_prices_file,
+    "./data/CMO-Historical-Data-Monthly.csv",
+    format = "file"
+  ),
+  tar_target(
+    wb_commodity_prices_raw,
+    read_csv(wb_commodity_prices_file)
+  ),
+  tar_target(
+    wb_commodity_prices_tbl,
+    clean_wb_commidity_prices(wb_commodity_prices_raw)
+  ),
+
+
+  ## Read export code descriptions
+  tar_target(
+    hs_product_meta_file,
+    "./data/UN Comtrade Commodity Classifications.xlsx",
+    format = "file"
+  ),
+
+  tar_target(
+    hs_product_meta_raw,
+    read_excel(hs_product_meta_file)
   ),
 
   ## Read + clean exports
@@ -54,14 +85,42 @@ list(
 
   tar_target(
     ssa_exports_tbl,
-    clean_exports(exports_raw, wb_country_meta_raw)
+    clean_exports(
+      exports_raw,
+      wb_country_meta_raw,
+      hs_product_meta_raw
+    )
   ),
 
   ## Create figures:
   tar_target(
-    export_charts,
-    create_export_charts(ssa_exports_tbl)
+    tza_export_chart,
+    create_export_charts(
+      ssa_exports_tbl
+    )
+  ),
+
+  tar_target(
+    wb_price_chart_ls,
+    create_wb_charts(
+      wb_tbl = wb_commodity_prices_tbl
+    )
+  ),
+
+  tar_target(
+    unctad_price_chart_ls,
+    create_unctad_charts(
+      unctad_prices_tbl = unctad_commodity_prices_tbl
+    )
+  ),
+
+  ## Write charts
+  tar_target(
+    figs2file,
+    write_figures(
+      wb_chart_ls = wb_price_chart_ls,
+      unctad_chart_ls = unctad_price_chart_ls,
+      tza_exports_chart = tza_export_chart
+    )
   )
-
-
-)
+  )

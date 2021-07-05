@@ -1,4 +1,8 @@
 COMMIDITY PRICES:
-The file 'us_commodityprice_m_02372543400211.csv' contains monthly commodity prices.
+The file 'us_commodityprice_m_02372543400211.csv' contains monthly commodity prices from UNCTAD.
 Source: https://unctadstat.unctad.org/wds/TableViewer/tableView.aspx?ReportId=140866
 Downloaded: 25-06-2021
+
+The folder 'PCPS_06-21-2021 20-08-49-68_timeSeries/' containes monthly, quarterly, and yearly commodity prices from the IMF.
+Source: https://data.imf.org/?sk=471DDDF8-D8A7-499A-81BA-5B332C01F8B9
+Downloaded: 27-06-2021
