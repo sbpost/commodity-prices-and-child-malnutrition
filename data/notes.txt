@@ -1,8 +1,26 @@
 COMMIDITY PRICES:
-The file 'us_commodityprice_m_02372543400211.csv' contains monthly commodity prices from UNCTAD.
+The file 'us_commodityprice_m_02372543400211.csv' contains monthly commodity prices from UNCTAD. NOTE: This file is not currently used.
 Source: https://unctadstat.unctad.org/wds/TableViewer/tableView.aspx?ReportId=140866
 Downloaded: 25-06-2021
 
 The folder 'PCPS_06-21-2021 20-08-49-68_timeSeries/' containes monthly, quarterly, and yearly commodity prices from the IMF.
 Source: https://data.imf.org/?sk=471DDDF8-D8A7-499A-81BA-5B332C01F8B9
 Downloaded: 27-06-2021
+
+The file 'CMO-Historical-Data-Monthly.csv' contains monthly commodity prices from the World Bank.
+Source: https://www.worldbank.org/en/research/commodity-markets
+Downloaded: 28-06-2021
+
+PRODUCT EXPORTS:
+The file 'country_hsproduct4digit_year.dta' contains yearly product export data for countries (products are classified according to HS92, four-digit leve). Data is from UN COMTRADE but supplied by Harvard Dataverse.
+Source: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/T4CHWJ
+Downloaded: 25-06-2021
+
+The file 'UN Comtrade Commodity Classifications.xlsx' contains descriptions for the product codes in the Harmonized System 1992 classification.
+Source: https://unstats.un.org/unsd/tradekb/Knowledgebase/50039/UN-Comtrade-Reference-Tables
+Downloaded: 26-06-2021
+
+COUNTRY META DATA:
+The file 'world_bank_country_metadata.csv' contains country-level meta data. Basically, matches country names, codes, and regions.
+Source: Available when downloading any of the World Bank databank datasets.
+Downlaoded: 26-06-2021

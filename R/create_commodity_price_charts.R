@@ -1,12 +1,13 @@
-## Create WB Commodity price charts:
-## wb_tbl <- tar_read(wb_commodity_prices_tbl)
-## unctad_prices_tbl <- tar_read(unctad_commodity_prices_tbl)
-
+#' Function that creates charts showing UNCTAD commodity prices.
+#'
+#' @param unctad_prices_tbl Dataframe with comodity prices from UNCTAD
+#' in a tidy format.
+#' @return List with charts.
 create_unctad_charts <- function(unctad_prices_tbl) {
   ## Return-list that contains figures
   collection_ls <- list()
 
-  ## Coffee
+  ## Create "groups" of prices that will be plotted together
   tropical_beverages <-
     c(
       "Cocoa beans, average daily prices New York/London (¢/lb.)",
@@ -26,51 +27,57 @@ create_unctad_charts <- function(unctad_prices_tbl) {
     )
 
   food_oils <-
-    c("Palm kernel oil, in bulk, Malaysia/Indonesia, CIF Rotterdam ($/t)",
+    c(
+      "Palm kernel oil, in bulk, Malaysia/Indonesia, CIF Rotterdam ($/t)",
       "Palm oil, in bulk, Malaysia/Indonesia, 5% FFA, CIF ($/t)",
       "Sunflower oil, in bulk, European Union, FOB N.W. European ports ($/t)",
       "Coconut oil, in bulk, Philippines/Indonesia, CIF Rotterdam ($/t)",
-      "Groundnut oil, in bulk, any origin, CIF Rotterdam ($/t)")
+      "Groundnut oil, in bulk, any origin, CIF Rotterdam ($/t)"
+    )
 
   tobacco <- c("Tobacco, unmanufactured, US import unit value  ($/t)")
 
-  mixed_food_crops <- c("Maize, Argentina, Rosario, Up River, FOB ($/t)",
-                        "Maize, United States, n° 3 yellow, FOB Gulf ($/t)",
-                        "Wheat, Argentina, Trigo Pan, Up River, FOB ($/t)",
-                        "Wheat, United States, n° 2 Hard Red Winter (ordinary), FOB Gulf ($/t)",
-                        "Bananas, Central and South America, FOT, US import price ($/kg)",
-                        "Bananas, Central America, Main Brands (average of US East and West Coast prices), FOR (US$/kg)",
-                        "Rice, Thailand, white milled, 5% broken, export price, FOB ($/t)")
+  mixed_food_crops <-
+    c(
+      "Maize, Argentina, Rosario, Up River, FOB ($/t)",
+      "Maize, United States, n° 3 yellow, FOB Gulf ($/t)",
+      "Wheat, Argentina, Trigo Pan, Up River, FOB ($/t)",
+      "Wheat, United States, n° 2 Hard Red Winter (ordinary), FOB Gulf ($/t)",
+      "Bananas, Central and South America, FOT, US import price ($/kg)",
+      "Bananas, Central America, Main Brands (average of US East and West Coast prices), FOR (US$/kg)",
+      "Rice, Thailand, white milled, 5% broken, export price, FOB ($/t)"
+    )
 
-  logging <-  c(
-    "Plywood, Africa & SE Asia, Lauan, 3-ply, 91cmx182cmx4mm, wholesale Tokyo (¢/sheet)",
-    "Tropical logs, Okoume (60% CI, 40% CE, 20% CS), West Africa, FOB ($/m3)",
-    "Tropical logs, Sapele, high quality (loyal and marchand), FOB, Cameroon ($/m3)")
-  ## Create charts on absolute prices: -----------------------------------------
+  logging <-
+    c(
+      "Plywood, Africa & SE Asia, Lauan, 3-ply, 91cmx182cmx4mm, wholesale Tokyo (¢/sheet)",
+      "Tropical logs, Okoume (60% CI, 40% CE, 20% CS), West Africa, FOB ($/m3)",
+      "Tropical logs, Sapele, high quality (loyal and marchand), FOB, Cameroon ($/m3)"
+    )
 
-  ## Beverage prices faceted:
-  collection_ls$`tropical_beverages` <-
+  ## Create charts showing absolute prices: ------------------------------------
+
+  collection_ls$tropical_beverages <-
     unctad_prices_tbl %>%
     filter(commodity %in% tropical_beverages) %>%
     basic_facet_plot()
 
-  ## sisal
-  collection_ls$`sisal` <-
+  collection_ls$sisal <-
     unctad_prices_tbl %>%
     filter(commodity %in% sisal) %>%
     basic_facet_plot()
 
-  collection_ls$`food_oils` <-
+  collection_ls$food_oils <-
     unctad_prices_tbl %>%
     filter(commodity %in% food_oils) %>%
     basic_facet_plot()
 
-  collection_ls$`other_tobacco_logging` <-
+  collection_ls$other_tobacco_logging <-
     unctad_prices_tbl %>%
     filter(commodity %in% c(logging, tobacco)) %>%
     basic_facet_plot()
 
-  collection_ls$`mixed_food_crops` <-
+  collection_ls$mixed_food_crops <-
     unctad_prices_tbl %>%
     filter(commodity %in% mixed_food_crops) %>%
     basic_facet_plot()
@@ -80,7 +87,11 @@ create_unctad_charts <- function(unctad_prices_tbl) {
 }
 
 
-
+#' Function that creates charts showing WB commodity prices.
+#'
+#' @param wb_tbl Dataframe with comodity prices from World Bank
+#' in a tidy format.
+#' @return List with charts.
 create_wb_charts <- function(wb_tbl) {
 
   ## Return-list that contains figures
@@ -92,7 +103,8 @@ create_wb_charts <- function(wb_tbl) {
   ## Filter data
   plotting_df <-
     wb_tbl %>%
-    filter(commodity %in% c(
+    filter(
+      commodity %in% c(
                             "Copper ($/mt)",
                             "Gold ($/troy oz)",
                             "Cotton, A Index ($/kg)",
@@ -102,10 +114,12 @@ create_wb_charts <- function(wb_tbl) {
                             "Coffee, Arabica ($/kg)",
                             "Coffee, Robusta ($/kg)",
                             "Tobacco, US import u.v. ($/mt)"
-                          ))
+                          )
+           )
 
 
   ## CREATE FIGURES: ---------------------------------------  -
+  ## Create table that is used to create the first plot.
   figure_1_tbl <-
     plotting_df %>%
     filter(period >= ymd("1990/01/01")) %>%
@@ -118,7 +132,7 @@ create_wb_charts <- function(wb_tbl) {
     ) %>%
     ungroup()
 
-  ## 1.1: With price as Y, colored by change from previous
+  ## 1.1: With price as Y, colored by change from previous observation
   collection_ls$figure_1.1 <-
     ggplot() +
     geom_rect(
@@ -256,6 +270,14 @@ prep_period_prices <- function(plotting_df, period_price_df) {
 
 }
 
+#' Convience function that standardizes the way commodity prices are plotted.
+#' This function handles the plots that plots price on the Y-axis and colors
+#' the price-line by how different the price is from the mean price in the
+#' previous interval.
+#'
+#' @param plotting_period_df Dataframe containing prices and difference
+#' from previous interval.
+#' @return Figure (ggplot object) with prices over time.
 plot_period_price <- function(plotting_period_price_df) {
   field_work_tbl <- get_field_work_table()
 
@@ -290,6 +312,13 @@ plot_period_price <- function(plotting_period_price_df) {
             theme(legend.position = "bottom")
 }
 
+#' Convience function that standardizes the way commodity prices are plotted.
+#' This function handles the plots that plot change in price from previous
+#' interval mean price.
+#'
+#' @param plotting_period_df Dataframe containing prices and difference
+#' from previous interval.
+#' @return Figure (ggplot object) with change in prices over time.
 plot_period_deviation <- function(plotting_period_price_df) {
   field_work_tbl <- get_field_work_table()
 
@@ -324,29 +353,33 @@ plot_period_deviation <- function(plotting_period_price_df) {
     globals()$color_scale
 }
 
-
+#' This function calculates the mean price of the previous 'interval_length'
+#' months. The price-data is first filtered according the period in question,
+#' then the mean price is calculated, and the one-row dataframe is returned.
+#' The function is mapped unto the original data-frame and a range of periods.
+#' This gives a list of 1-row data frames which is then reduced in the "outer"
+#' function to one dataframe containing all of the rows.
+#'
+#' I'm interested in quantifying how "large" a given price fluctuation is.
+#' One way is to take the deviation from the mean price across the period.
+#' However, this might mis-estimate the importance of price changes after
+#' a price hits a "new normal". For instance, if a price have been at certain
+#' level for a year, the population might have "gotten used" to this new price,
+#' and adjusted accordningly. When the price then changes, this new price
+#' might be closer to the overall mean price, but be very significant still
+#' for the population in question, because their income changes drastically.
+#' Using only the mean-deviation would underestimate the importance of such
+#' a period.
+#'
+#' @param current_period String or date-type with the current price period.
+#' @param df Dataframe containing prices.
+#' @param interval_length An integer with the length of the interval in months.
+#' @return 1-row dataframe with the mean price in the interval
 get_interval_mean_prices <- function(current_period, df, interval_length) {
-  ## I'm interested in quantifying how "large" a given price fluctuation is.
-  ## One way is to take the deviation from the mean price across the period.
-  ## However, this might mis-estimate the importance of price changes after
-  ## a price hits a "new normal". For instance, if a price have been at certain
-  ## level for a year, the population might have "gotten used" to this new price,
-  ## and adjusted accordningly. When the price then changes, this new price
-  ## might be closer to the overall mean price, but be very significant still
-  ## for the population in question, because their income changes drastically.
-  ## Using only the mean-deviation would underestimate the importance of such
-  ## a period.
 
-  ## This function calculates the mean price of the previous 'interval_length'
-  ## months. First the
-
-  ## This function is mapped unto the original data-frame and a range of periods.
-  ## It returns a 1-row data frame for each iteration. This gives a list of
-  ## 1-row data frames which is then reduced in the "outer" function to one
-  ## dataframe containing all of the rows.
-
-  ## I want the mean price of the previous X (interval_length) month NOT including the current period
-                                        # interval_end <- ymd(current_period) - months(1)
+  ## I want the mean price of the previous X (interval_length) month
+  ## NOT including the current period
+  ## interval_end <- ymd(current_period) - months(1)
   interval_end <- ymd(current_period) - months(1)
   interval_start <- interval_end - months(interval_length)
 
@@ -367,26 +400,10 @@ get_interval_mean_prices <- function(current_period, df, interval_length) {
   return(mean_price_tbl)
 }
 
-get_field_work_table <- function() {
-  field_work_tbl <-
-    tribble(
-      ~ survey, ~ start, ~ end,
-      ## https://microdata.worldbank.org/index.php/catalog/76
-      2008, "2008-10-01", "2009-09-01",
-      ## https://microdata.worldbank.org/index.php/catalog/1050
-      2010, "2010-10-01", "2011-09-01",
-      ## https://microdata.worldbank.org/index.php/catalog/2252
-      2012, "2012-10-01", "2013-10-01"
-    ) %>%
-    mutate(
-      start = ymd(start),
-      end = ymd(end)
-    )
-
-  return(field_work_tbl)
-
-}
-
+#' Simple convenience function that standardizes how the absolute price over time plots
+#' are made.
+#' @param df Dataframe containing prices.
+#' @return Figure with prices on Y, time on X, facetted by commodity.
 basic_facet_plot <- function(df) {
   df %>%
     ggplot(aes(x = period,

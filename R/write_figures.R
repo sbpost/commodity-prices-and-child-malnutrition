@@ -1,9 +1,10 @@
 #' A simple convenience function that writes all the figures to file.
 #'
 #' @param wb_chart_ls List containing the World Bank commodity price charts.
-#' @param unctad_chart_ls List containing the
-#' @param
-
+#' @param unctad_chart_ls List containing the UNCTAD commodity price charts.
+#' @param tza_exports_chart The figure (ggplot object) containing Tanzanian
+#' export chart.
+#' @return A simple string ("OK") for dependency tracking.
 write_figures <- function(wb_chart_ls, unctad_chart_ls, tza_exports_chart) {
 
   wb_chart_path <- "./figures/wb-price-charts/"
@@ -51,7 +52,7 @@ write_figures <- function(wb_chart_ls, unctad_chart_ls, tza_exports_chart) {
 #' This is the igure_ls[[fig]] is the figure that is written.
 #' @param figure_ls A named list of figures.
 #' @param chart_path A string with the path to the folder that the figures will
-#' save ind.
+#' be saved in.
 write_wb_figs_to_file <- function(fig, figure_ls, chart_path) {
   ggsave(
     filename = str_glue("{chart_path}{fig}.png"),
@@ -71,7 +72,7 @@ write_wb_figs_to_file <- function(fig, figure_ls, chart_path) {
 #' This is the igure_ls[[fig]] is the figure that is written.
 #' @param figure_ls A named list of figures.
 #' @param chart_path A string with the path to the folder that the figures will
-#' save ind.
+#' saved in.
 write_unctad_figs_to_file <- function(fig, figure_ls, chart_path) {
   ggsave(
     filename = str_glue("{chart_path}{fig}.png"),

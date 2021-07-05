@@ -1,3 +1,8 @@
+#' Function that reformats and cleans the commodity prices from UNCTAD.
+#'
+#' @param unctad_prices_raw Dataframe containing monthly commodity price data
+#' from UNCTADstats.
+#' @return A dataframe with the cleaned commodity price data in a tidy format.
 clean_unctad_commidity_prices <- function(unctad_prices_raw) {
 
   ## Format UNCTAD prices ----------------------------------
@@ -9,7 +14,9 @@ clean_unctad_commidity_prices <- function(unctad_prices_raw) {
     ## Reformat to long data (so periods are not columns, but rows)
     pivot_longer(-commodity, names_to = "original_period", values_to = "price") %>%
     ## change the period-column formating to date-type (months) rather than string
-    ## This requires a bit of hacking around due to the poor formating (sometimes a . after months, someimes not + sometimes four-letter months, sometimes three)
+    ## This requires a bit of hacking around due to the poor formating (sometimes
+    ## a . after months, someimes not + sometimes four-letter months, sometimes
+    ## three)
     mutate(
       day = "01",
       month = str_sub(original_period, 1, 3),
@@ -18,15 +25,20 @@ clean_unctad_commidity_prices <- function(unctad_prices_raw) {
     mutate(
       period = dmy(str_glue("{day}/{month}/{year}"))
     ) %>%
-    ## Change the encoding to Latin1 in order to get all the string-formatting looking right (+ enable filtering)
-    ## Again, who on earth prepped this UN data?
+    ## Change the encoding to Latin1 in order to get all the string-formatting
+    ## looking right (+ enable filtering). Again, who on earth prepped this UN data?
     mutate(
       commodity = parse_character(commodity, locale = locale(encoding = "Latin1"))
     ) %>%
-    ## Remove all the non-numeric price values (sometimes missing is listed at "_", "..", "-")
+    ## Remove all the non-numeric price values (sometimes missing is
+    ## listed at "_", "..", "-").
     ## Replace with NA
     mutate(
-      price_numeric = if_else(price %in% c("_", "..", "-"), NA_real_, as.numeric(price))
+      price_numeric = if_else(
+        price %in% c("_", "..", "-"),
+        NA_real_,
+        as.numeric(price)
+      )
     )
 
   ## To see that the only prices that give price_numeric == NA, uncomment:
@@ -38,6 +50,11 @@ clean_unctad_commidity_prices <- function(unctad_prices_raw) {
   return(unctad_prices_tbl)
 }
 
+#' Function that reformats and cleans the commodity prices from UNCTAD.
+#'
+#' @param wb_prices_raw Dataframe containing monthly commodity price data
+#' from the World Bank.
+#' @return A dataframe with the cleaned commodity price data in a tidy format.
 clean_wb_commidity_prices <- function(wb_prices_raw) {
 
   wb_prices_tbl <-
@@ -48,6 +65,7 @@ clean_wb_commidity_prices <- function(wb_prices_raw) {
     mutate(
       price_numeric = ifelse(price == "..", NA_character_, price) %>% as.numeric()
     ) %>%
+    ## Fix the date-format (currently a string with M for months)
     mutate(
       period = str_replace(Period, "M", "/"),
       period = str_glue("{period}/01"),

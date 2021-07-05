@@ -1,10 +1,14 @@
- # ssa_exports_tbl <- tar_read(ssa_exports_tbl)
+#' Function that creates
+#'
+#' @param ssa_exports_tbl Dataframe containing product-level exports
+#' for SSA.
+#' @return A figure showing yearly product exports of Tanzania.
+#' The ten most important products between 2000-2015 are highlighed.
 
 create_export_charts <- function(ssa_exports_tbl) {
 
-  ## 1: Create figure of Tanzania's most important exported products.
-  ## A) Get the products that on avaerage (in the period - 1995-2018) have the
-  ## highest share of the total exports in TZ.
+  ## A) Get the products that on average (in the period 2000-2015) have the
+  ## highest share of total exports in TZA.
 
   ## B) Create a dataframe with only these most important products.
   ## This data is used to create the colored and named lines in the figure.
@@ -13,12 +17,15 @@ create_export_charts <- function(ssa_exports_tbl) {
 
   ## D) Add lines that signal the survey years.
 
+  ## Filter exports:
   tz_exports_tbl <-
     ssa_exports_tbl %>%
     filter(location_code == "TZA") %>%
     filter(year %in% 2000:2015)
 
+  ## Grab the field-work table (used to create lines for survey period)
   field_work_tbl <- get_field_work_table()
+
   ## A -----------------------------------------------------
   ## Get average export share in the period
   mean_tz_export_share <-
@@ -36,25 +43,15 @@ create_export_charts <- function(ssa_exports_tbl) {
     slice(1:10)
 
   ## B, C, D -------------------------------------------------
+
+  ## Filter product-year export data to only the ten most
+  ## important products in the period.
   most_tza_exported_tbl <-
     tz_exports_tbl %>%
     semi_join(most_tz_exported_products, by = "hs_product_code")
 
-colors <-  c(
-    "#a6cee3",
-    "#1f78b4",
-    "#b2df8a",
-    "#33a02c",
-    "#fb9a99",
-    "#e31a1c",
-    "#fdbf6f",
-    "#ff7f00",
-    "#cab2d6",
-    "#6a3d9a"
-  )
-
   tza_export_chart <-
-  ggplot() +
+    ggplot() +
     ## Add bacgkround lines of all other products
     geom_line(
       data = anti_join(
@@ -65,14 +62,14 @@ colors <-  c(
       aes(
         x = year,
         y = export_value,
-      group = hs_product_description
-        ),
+        group = hs_product_description
+      ),
       color = "gray",
       alpha = 0.5,
-    ) +
+      ) +
     ## Add lines for survey years
     geom_vline(data = field_work_tbl, aes(xintercept = survey), size = 1.2, color = "#594949") +
-    ## Add colored lines of most exported products
+    ## Add colored lines + points for most exported products
     geom_line(
       data = most_tza_exported_tbl,
       aes(
@@ -91,17 +88,16 @@ colors <-  c(
         color = hs_product_description
       )
     ) +
-    coord_cartesian(ylim=c(0, 5.0e+08)) +
+    coord_cartesian(ylim=c(0, 5.0e+08)) + ## Zoom plot
     scale_x_continuous(expand = c(0, 0)) +
     scale_y_continuous(expand = c(0, 0)) +
     xlab("Year") +
     ylab("Export value (current USD)") +
     scale_color_manual(
       name = "",
-      values = colors) +
+      values = globals()$colors) +
     theme_bw()
 
-
-return(tza_export_chart)
+  return(tza_export_chart)
 
 }
