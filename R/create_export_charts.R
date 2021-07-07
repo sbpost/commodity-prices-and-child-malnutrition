@@ -1,4 +1,4 @@
-#' Function that creates
+#' Function that creates figure showing yearly product exports for Tanzania.
 #'
 #' @param ssa_exports_tbl Dataframe containing product-level exports
 #' for SSA.
@@ -76,7 +76,7 @@ create_export_charts <- function(ssa_exports_tbl) {
         x = year,
         y = export_value,
         group = hs_product_description,
-        color = hs_product_description,
+        color = hs_product_description
         )
     ) +
     geom_point(
@@ -95,7 +95,8 @@ create_export_charts <- function(ssa_exports_tbl) {
     ylab("Export value (current USD)") +
     scale_color_manual(
       name = "",
-      values = globals()$colors) +
+      values = globals()$colors
+    ) +
     theme_bw()
 
   return(tza_export_chart)

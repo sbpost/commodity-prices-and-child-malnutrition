@@ -2,14 +2,26 @@
 #'
 #' @param wb_chart_ls List containing the World Bank commodity price charts.
 #' @param unctad_chart_ls List containing the UNCTAD commodity price charts.
+#' @param selected_commodity_charts_ls List containing the commodity price charts with 5 selected prices.
 #' @param tza_exports_chart The figure (ggplot object) containing Tanzanian
 #' export chart.
 #' @return A simple string ("OK") for dependency tracking.
-write_figures <- function(wb_chart_ls, unctad_chart_ls, tza_exports_chart) {
+write_figures <- function(wb_chart_ls, unctad_chart_ls, selected_commodity_charts_ls, tza_exports_chart) {
 
   wb_chart_path <- "./figures/wb-price-charts/"
   unctad_chart_path <- "./figures/unctad-price-charts/"
+  selected_commodity_path <- "./figures/selected-commodities/"
   export_chart_path <- "./figures/"
+
+  ## Write selected commodity charts (after email-instructions)
+  sc_figures <- names(selected_commodity_charts_ls)
+
+  map(
+    sc_figures,
+    write_wb_figs_to_file,
+    figure_ls = selected_commodity_charts_ls,
+    chart_path = selected_commodity_path
+  )
 
   ## Write WB figures
   wb_figures <- names(wb_chart_ls)

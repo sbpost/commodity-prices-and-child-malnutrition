@@ -9,7 +9,6 @@ options(tidyverse.quiet = TRUE)
 library(tidyverse)
 library(haven) # Read .dta
 library(readxl) # Read .xls(x)
-                                        # library(countrycode)
 library(lubridate) # handling dates
 library(ggthemes) # to get the Stata theme
 
@@ -114,13 +113,22 @@ list(
     )
   ),
 
+  tar_target(
+    selected_commodity_chart_ls,
+    create_selected_commodity_charts(
+      unctad_prices_tbl = unctad_commodity_prices_tbl,
+      wb_prices_tbl = wb_commodity_prices_tbl
+    )
+  ),
+
   ## Write charts
   tar_target(
     figs2file,
     write_figures(
       wb_chart_ls = wb_price_chart_ls,
       unctad_chart_ls = unctad_price_chart_ls,
+      selected_commodity_charts_ls = selected_commodity_chart_ls,
       tza_exports_chart = tza_export_chart
     )
   )
-  )
+)

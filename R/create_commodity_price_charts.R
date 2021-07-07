@@ -1,3 +1,158 @@
+#' Function that creates the final charts (after receiving instructions
+#' per email).
+#' @param unctad_prices_tbl Dataframe with comodity prices from UNCTAD
+#' in a tidy format.
+#' @param wb_prices_tbl Dataframe with comodity prices from WB
+#' in a tidy format.
+#' @return List with charts.
+create_selected_commodity_charts <- function(unctad_prices_tbl, wb_prices_tbl) {
+  collection_ls <- list()
+
+  ## Create the dataset used for plots. This combines observations from UNCTAD and WB prices.
+  plotting_df <-
+    unctad_prices_tbl %>%
+    bind_rows(wb_prices_tbl) %>%
+    filter(period > ymd("1995/01/01")) %>%
+    filter(
+      commodity %in%
+      c(
+        "Coffee, other mild Arabicas, ex-dock EU (¢/lb.)",
+        "Coffee, Robustas, ex-dock EU (¢/lb.)",
+        "Sisal, Tanzania/Kenya, n° 3 & UG, FOB ($/t)",
+        "Cocoa beans, average daily prices New York/London (¢/lb.)",
+        "Cotton, A Index ($/kg)"
+      ))
+
+  ## Create a price-as-index variable
+  ## Index price = 2015-01-01:
+  index_price <-
+    plotting_df %>%
+    filter(period == ymd("2015-01-01")) %>%
+    rename(index_price = price_numeric) %>%
+    select(commodity, index_price)
+
+  ## Get period mean price
+  total_period_mean <-
+    plotting_df %>%
+    group_by(commodity) %>%
+    summarize(
+      mean_price = mean(price_numeric),
+      sd_price = sd(price_numeric)
+    )
+
+  ## Field work table to plot survey periods
+  field_work_tbl <- get_field_work_table()
+
+  ## Add index_price to plotting data:
+  plotting_df <-
+    plotting_df %>%
+    left_join(index_price, by = "commodity") %>%
+    left_join(total_period_mean, by = "commodity") %>%
+    mutate(
+      price_as_index = price_numeric / index_price * 100,
+      price_as_percentage_of_mean = price_numeric / mean_price * 100,
+      price_as_z = (price_numeric - mean_price) / sd_price
+    ) %>%
+    select(-c(original_period, price, day, month, year))
+
+  ## Create chart that shows actual price series (faceted):
+  collection_ls$actual_price_p <-
+    ggplot() +
+    geom_rect(
+      data = field_work_tbl,
+      aes(
+        xmin = start,
+        xmax = end,
+        ymin = -Inf,
+        ymax = Inf
+      ),
+      fill = "gray",
+      alpha = 0.4,
+      color = NA
+    ) +
+    geom_line(
+      data = plotting_df,
+      aes(x = period,
+          y = price_numeric,
+          group = commodity,
+          color = commodity)
+    ) +
+    scale_color_manual(values = globals()$colors) +
+    theme_stata() +
+                                        # theme_bw() +
+    ylab("Price (nominal)") +
+    xlab("Date") +
+    facet_wrap(vars(commodity), scales = "free") +
+    theme(legend.title = element_blank(),
+          legend.position = "none",
+          axis.title=element_text(size=12))
+
+  ## Create chart that shows price-as-z series:
+  collection_ls$price_as_z_p <-
+    ggplot() +
+    geom_rect(
+      data = field_work_tbl,
+      aes(
+        xmin = start,
+        xmax = end,
+        ymin = -Inf,
+        ymax = Inf
+      ),
+      fill = "gray",
+      alpha = 0.4,
+      color = NA
+    ) +
+    geom_line(
+      data = plotting_df,
+      aes(x = period,
+          y = price_as_z,
+          group = commodity,
+          color = commodity)) +
+    scale_color_manual(values = globals()$colors) +
+    theme_stata() +
+                                        # theme_bw() +
+    facet_wrap(vars(commodity)) +
+    ylab("Price as z-score") +
+    xlab("Date") +
+    theme(legend.title = element_blank(),
+          legend.position = "none",
+          axis.title=element_text(size=12))
+
+  ##
+  collection_ls$price_share_of_mean_p <-
+    ggplot() +
+    geom_rect(
+      data = field_work_tbl,
+      aes(
+        xmin = start,
+        xmax = end,
+        ymin = -Inf,
+        ymax = Inf
+      ),
+      fill = "gray",
+      alpha = 0.4,
+      color = NA
+    ) +
+    geom_line(
+      data = plotting_df,
+      aes(x = period,
+          y = price_as_percentage_of_mean,
+          group = commodity,
+          color = commodity)) +
+    facet_wrap(vars(commodity)) +
+    scale_color_manual(values = globals()$colors) +
+    ylab("Price as % of mean") +
+    xlab("Date") +
+    theme_stata() +
+                                        # theme_bw() +
+    theme(legend.title = element_blank(),
+          legend.position = "none",
+          axis.title=element_text(size=12))
+
+  ## Return list with plots
+  return(collection_ls)
+}
+
 #' Function that creates charts showing UNCTAD commodity prices.
 #'
 #' @param unctad_prices_tbl Dataframe with comodity prices from UNCTAD
@@ -105,17 +260,17 @@ create_wb_charts <- function(wb_tbl) {
     wb_tbl %>%
     filter(
       commodity %in% c(
-                            "Copper ($/mt)",
-                            "Gold ($/troy oz)",
-                            "Cotton, A Index ($/kg)",
+                       "Copper ($/mt)",
+                       "Gold ($/troy oz)",
+                       "Cotton, A Index ($/kg)",
                                         # "Coconut oil ($/mt)",
-                            "Tea, Mombasa ($/kg)",
-                            "Cocoa ($/kg)",
-                            "Coffee, Arabica ($/kg)",
-                            "Coffee, Robusta ($/kg)",
-                            "Tobacco, US import u.v. ($/mt)"
-                          )
-           )
+                       "Tea, Mombasa ($/kg)",
+                       "Cocoa ($/kg)",
+                       "Coffee, Arabica ($/kg)",
+                       "Coffee, Robusta ($/kg)",
+                       "Tobacco, US import u.v. ($/mt)"
+                     )
+    )
 
 
   ## CREATE FIGURES: ---------------------------------------  -
@@ -158,7 +313,7 @@ create_wb_charts <- function(wb_tbl) {
     ) +
     facet_wrap(vars(commodity), scales = "free") +
     ylab("Price (nominal USD)") +
-    xlab("Time") +
+    xlab("Date") +
     scale_color_manual(
       name = "",
       breaks = c("negative", "positive"),
@@ -194,11 +349,11 @@ create_wb_charts <- function(wb_tbl) {
     ) +
     facet_wrap(vars(commodity), scales = "free") +
     ylab("Price (nominal USD)") +
-    xlab("Time") +
+    xlab("Date") +
     labs(color = "Price as Z-score") +
     theme_bw() +
     theme(legend.position = "bottom") +
-  globals()$color_scale
+    globals()$color_scale
 
   ## 1.3: With Z-score as Y, colored by Z
   collection_ls$figure_1.3 <-
@@ -226,7 +381,7 @@ create_wb_charts <- function(wb_tbl) {
     ) +
     facet_wrap(vars(commodity), scales = "free") +
     ylab("Price as Z-score") +
-    xlab("Time") +
+    xlab("Date") +
     labs(color = "Price as Z-score") +
     theme_bw() +
     theme(legend.position = "bottom") +
@@ -308,7 +463,7 @@ plot_period_price <- function(plotting_period_price_df) {
             labs(color = "Difference from previous period mean (index = 100)") +
             theme_bw() +
             ylab("Price (nominal USD)") +
-            xlab("Time") +
+            xlab("Date") +
             theme(legend.position = "bottom")
 }
 
@@ -347,7 +502,7 @@ plot_period_deviation <- function(plotting_period_price_df) {
     facet_wrap(vars(commodity)) +
     labs(color = "Difference from previous period mean (index = 100)") +
     ylab("Difference from previous period mean (index = 100)") +
-    xlab("Time") +
+    xlab("Date") +
     theme_bw() +
     theme(legend.position = "bottom") +
     globals()$color_scale
@@ -416,5 +571,5 @@ basic_facet_plot <- function(df) {
     theme(legend.title = element_blank(),
           legend.position = "none") +
     ylab("Price") +
-    xlab("Time")
+    xlab("Date")
 }
